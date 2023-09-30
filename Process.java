@@ -6,12 +6,14 @@ public class Process
     public String name; 
     public List<ASTNode>instrList; 
     public int PC; //index in instrlist; 
+    public HashMap<String , Integer>lastUseMap; 
 
     Process(String name)
     {
         this.name = name; 
         this.PC = 0; 
         this.instrList = new ArrayList<ASTNode>(); 
+        this.lastUseMap = new HashMap<String , Integer>(); 
     }
 
     Process(Process b)
@@ -19,6 +21,7 @@ public class Process
         this.PC = b.PC;
         this.name = b.name; 
         this.instrList = new ArrayList<ASTNode>(b.instrList); 
+        this.lastUseMap = new HashMap<String , Integer>(); 
     }
     Process(){
         
@@ -30,6 +33,7 @@ public class Process
         p.name = this.name; 
         p.PC = this.PC; 
         p.instrList = this.instrList; 
+        p.lastUseMap = this.lastUseMap; 
         return p; 
     }
 
@@ -139,5 +143,14 @@ public class Process
         ASTNode right = new ASTNode(constVar);  
         asNode.setLR(left, right); 
         this.instrList.add(asNode); 
+    }
+
+    public void preProcess()
+    {
+        for(int i = 0; i<this.instrList.size(); i++)
+        {
+            ASTNode node = this.instrList.get(i); 
+            this.lastUseMap.put(node.left.val.name , i); 
+        }
     }
 }

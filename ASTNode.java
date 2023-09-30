@@ -6,7 +6,7 @@ public class ASTNode
     public ASTNode left;
     public ASTNode right; 
     public int level; 
-    public  Variable val; 
+    public Variable val; 
     public Boolean isOperator; 
 
     ASTNode(char op)

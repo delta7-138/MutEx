@@ -17,6 +17,7 @@ public class Main
             proc.assign(scn.nextLine() , Main.globalVariableMap);
         }
 
+        proc.preProcess();
         scn.close();
 
         return proc; 
@@ -36,7 +37,7 @@ public class Main
 
         String [] varNameList = {"x" , "y"}; 
         String [] processNameList = {"P1" , "P2"}; 
-        String [] processList = {"x 1\nx 3" , "y 1\ny 2"}; 
+        String [] processList = {"x 1\ny 3" , "y 1\nx 2"}; 
         for(String varn: varNameList)
         {
             Main.globalVariableMap.put(varn , new Variable(varn)); 

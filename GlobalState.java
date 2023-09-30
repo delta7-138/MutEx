@@ -4,6 +4,7 @@ public class GlobalState
 {
     public List<Process>pList; 
     public HashMap<String , Variable>vMap; 
+    public int ProcessIndex = 0; 
 
     GlobalState(List<Process>pList , HashMap<String , Variable>vMap)
     {
@@ -32,6 +33,11 @@ public class GlobalState
 
     }
 
+    public Process getProcess()
+    {
+        return this.pList.get(this.ProcessIndex); 
+    }
+    
     public String serialize()
     {
         String res = ""; 
