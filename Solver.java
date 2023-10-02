@@ -6,6 +6,7 @@ public abstract class Solver
     protected GlobalState initState;
     protected HashMap<String, GlobalState>StateMap; 
     protected HashMap<String , Set<String>>StateGraph; 
+    protected int numStates; 
 
     Solver(GlobalState gbstate)
     {   
@@ -16,6 +17,7 @@ public abstract class Solver
 
     public void printFinalStates()
     {
+        int ctr = 0; 
         for(Map.Entry<String , GlobalState> set: this.StateMap.entrySet())
         {
             Boolean finalState = true;
@@ -30,9 +32,31 @@ public abstract class Solver
             if(finalState)
             {
                 System.out.println(set.getValue().serialize());
+                ctr++; 
             }
+
         }
+
+        System.out.println(ctr); 
     }
+
+    public void printAllStates()
+    {
+        int ctr = 0; 
+        for(Map.Entry<String , GlobalState> set: this.StateMap.entrySet())
+        {
+            System.out.println(set.getValue().serialize()); 
+            ctr++;
+        }
+        this.numStates = ctr; 
+    }
+
+    public void printNumStates()
+    {
+        this.numStates = this.StateMap.size(); 
+        System.out.println(this.numStates); 
+    }
+
 
     public void printStateGraph()
     {

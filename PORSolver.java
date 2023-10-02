@@ -1,69 +1,89 @@
 import java.util.*;
 
 public class PORSolver extends Solver
-{
-    //private HashMap<String , HashMap<String , Integer>>lastUseMapinState; 
+{ 
     PORSolver(GlobalState init)
     {
-        super(init); 
-        //lastUseMapinState = new HashMap<String , HashMap<String , Integer>>(); 
+        super(init);  
     }
 
-    public Boolean calcDependency(Process currProcess , ASTNode instr , List<ASTNode>persList , List<GlobalState> perState)
+    public Boolean calcDependency(GlobalState currState , int tinx , int tdashinx)
     {
-        if(persList.size() == 0)
-            return true; 
-            
-        for(int i = 0; i<persList.size(); i++)
+        Process tProcess = currState.pList.get(tinx); 
+        Process tdashProcess = currState.pList.get(tdashinx); 
+
+        ASTNode tProcessInstr = tProcess.getCurrInstr(); 
+        ASTNode tdashProcessInstr = tdashProcess.getCurrInstr(); 
+
+        //conflicting transitions
+        if(tProcessInstr.left.val.name.equals(tdashProcessInstr.left.val.name))
         {
-            //conflicting
-            ASTNode compInstr = persList.get(i); 
-            GlobalState compState = perState.get(i); 
-    
-            if(compInstr.left.val.name.equals(instr.left.val.name))
-            {
-                return true; 
-            }
-            
-            Process processSel = compState.getProcess(); 
-            if(currProcess.lastUseMap.get(instr.left.val.name) > processSel.PC || currProcess.PC < processSel.lastUseMap.get(instr.left.val.name))
-            {
-                return true; 
-            }
+            return true;
         }
 
+        //parallel and independent
+        if(!tProcess.lastUseMap.containsKey(tdashProcessInstr.left.val.name) || !tdashProcess.lastUseMap.containsKey(tProcessInstr.left.val.name))
+        {
+            return false; 
+        }
+
+        //parallel and can-be-dependent 
+        if(tProcess.lastUseMap.get(tdashProcessInstr.left.val.name) > tProcess.PC || tdashProcess.lastUseMap.get(tProcessInstr.left.val.name) > tdashProcess.PC)
+        {
+            return true; 
+        }
+
+        //parallel and independent
         return false; 
     }
 
     @Override
     public List<GlobalState> calcTranSet(GlobalState currState)
     {
-
-        List<GlobalState>persList = new ArrayList<GlobalState>(); 
-        List<ASTNode>persInstr = new ArrayList<ASTNode>(); 
+        List<Integer>persIndexList = new ArrayList<Integer>(); 
+        List<GlobalState> stateSet = new ArrayList<GlobalState>(); 
+        Set<Integer>controlSet = new HashSet<Integer>();
 
         for(int i = 0; i<currState.pList.size(); i++)
         {
-            GlobalState cloneState = new GlobalState(currState); 
-            if(cloneState.pList.get(i).EOP())
+            if(!currState.pList.get(i).EOP())
             {
-                continue; 
-            }
-
-            if(calcDependency(cloneState.pList.get(i) , cloneState.pList.get(i).getCurrInstr() , persInstr , persList))
-            {
-                //add only if can be dependent or conflicting
-                cloneState.ProcessIndex = i; 
-                persInstr.add(cloneState.pList.get(i).getCurrInstr());
-                persList.add(cloneState); 
+                persIndexList.add(i); 
+                controlSet.add(i); 
+                break;
             }
         }
 
-        for(GlobalState state : persList)
+        if(persIndexList.size() == 0)
+            return stateSet; 
+
+        for(int i = 0; i<persIndexList.size(); i++)
         {
-            state.incrEval(state.ProcessIndex);
+            int persInx = persIndexList.get(i); 
+            Process controlProc = currState.pList.get(persInx); 
+            for(int j = 0; j<currState.pList.size(); j++)
+            {
+                Process compProc = currState.pList.get(j); 
+                if(persInx == j || controlSet.contains(j) || compProc.EOP() || controlProc.EOP())
+                {
+                    continue;
+                }
+
+                if(calcDependency(currState, persInx, j))
+                {
+                    persIndexList.add(j); 
+                    controlSet.add(j); 
+                }
+            }
         }
-        return persList; 
+
+        for(int i : persIndexList)
+        {
+            GlobalState cloneState = new GlobalState(currState); 
+            cloneState.incrEval(i);
+            stateSet.add(cloneState); 
+        }
+        return stateSet; 
     }
 }
 
